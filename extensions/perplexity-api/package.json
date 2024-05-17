@@ -38,40 +38,28 @@
           "default": "global",
           "data": [
             {
-              "title": "Follow global model",
-              "value": "global"
+              "value": "global",
+              "title": "Follow global model"
+            },
+            {
+              "value": "llama-3-sonar-small-32k-chat",
+              "title": "Sonar Small 7B 32k"
+            },
+            {
+              "value": "llama-3-sonar-large-32k-chat",
+              "title": "Sonar Large 70B 32k"
+            },
+            {
+              "value": "llama-3-8b-instruct",
+              "title": "Llama3 8B 8k"
+            },
+            {
+              "value": "llama-3-70b-instruct",
+              "title": "Llama3 70B 8k"
             },
             {
               "value": "mixtral-8x7b-instruct",
-              "title": "Mixtral 8x7b Instruct"
-            },
-            {
-              "value": "mistral-7b-instruct",
-              "title": "Mistral 7B Instruct"
-            },
-            {
-              "value": "llama-2-70b-chat",
-              "title": "Llama2 70B Chat"
-            },
-            {
-              "value": "codellama-34b-instruct",
-              "title": "CodeLlama 34B Instruct"
-            },
-            {
-              "value": "codellama-70b-instruct",
-              "title": "CodeLlama 70B Instruct"
-            },
-            {
-              "value": "sonar-small-chat",
-              "title": "Sonar small 7B Chat"
-            },
-            {
-              "value": "sonar-medium-chat",
-              "title": "Sonar medium 8x7B Chat"
-            },
-            {
-              "value": "pplx-70b-chat",
-              "title": "Perplexity 70B Chat"
+              "title": "Mixtral 8×7B 16k"
             }
           ]
         }
@@ -88,7 +76,7 @@
           "title": "Prompt",
           "description": "Enter instructions for correcting spelling and grammar.",
           "type": "textfield",
-          "default": "Fix spelling, grammar and punctuation. ONLY write the corrected version without explanations.",
+          "default": "Fix spelling, grammar, and punctuation. It is important that you only correct the text and do not write any explanations.",
           "required": false
         },
         {
@@ -100,40 +88,28 @@
           "default": "global",
           "data": [
             {
-              "title": "Follow global model",
-              "value": "global"
+              "value": "global",
+              "title": "Follow global model"
+            },
+            {
+              "value": "llama-3-sonar-small-32k-chat",
+              "title": "Sonar Small 7B 32k"
+            },
+            {
+              "value": "llama-3-sonar-large-32k-chat",
+              "title": "Sonar Large 70B 32k"
+            },
+            {
+              "value": "llama-3-8b-instruct",
+              "title": "Llama3 8B 8k"
+            },
+            {
+              "value": "llama-3-70b-instruct",
+              "title": "Llama3 70B 8k"
             },
             {
               "value": "mixtral-8x7b-instruct",
-              "title": "Mixtral 8x7b Instruct"
-            },
-            {
-              "value": "mistral-7b-instruct",
-              "title": "Mistral 7B Instruct"
-            },
-            {
-              "value": "llama-2-70b-chat",
-              "title": "Llama2 70B Chat"
-            },
-            {
-              "value": "codellama-34b-instruct",
-              "title": "CodeLlama 34B Instruct"
-            },
-            {
-              "value": "codellama-70b-instruct",
-              "title": "CodeLlama 70B Instruct"
-            },
-            {
-              "value": "sonar-small-chat",
-              "title": "Sonar small 7B Chat"
-            },
-            {
-              "value": "sonar-medium-chat",
-              "title": "Sonar medium 8x7B Chat"
-            },
-            {
-              "value": "pplx-70b-chat",
-              "title": "Perplexity 70B Chat"
+              "title": "Mixtral 8×7B 16k"
             }
           ]
         }
@@ -162,40 +138,28 @@
           "default": "global",
           "data": [
             {
-              "title": "Follow global model",
-              "value": "global"
+              "value": "global",
+              "title": "Follow global model"
+            },
+            {
+              "value": "llama-3-sonar-small-32k-chat",
+              "title": "Sonar Small 7B 32k"
+            },
+            {
+              "value": "llama-3-sonar-large-32k-chat",
+              "title": "Sonar Large 70B 32k"
+            },
+            {
+              "value": "llama-3-8b-instruct",
+              "title": "Llama3 8B 8k"
+            },
+            {
+              "value": "llama-3-70b-instruct",
+              "title": "Llama3 70B 8k"
             },
             {
               "value": "mixtral-8x7b-instruct",
-              "title": "Mixtral 8x7b Instruct"
-            },
-            {
-              "value": "mistral-7b-instruct",
-              "title": "Mistral 7B Instruct"
-            },
-            {
-              "value": "llama-2-70b-chat",
-              "title": "Llama2 70B Chat"
-            },
-            {
-              "value": "codellama-34b-instruct",
-              "title": "CodeLlama 34B Instruct"
-            },
-            {
-              "value": "codellama-70b-instruct",
-              "title": "CodeLlama 70B Instruct"
-            },
-            {
-              "value": "sonar-small-chat",
-              "title": "Sonar small 7B Chat"
-            },
-            {
-              "value": "sonar-medium-chat",
-              "title": "Sonar medium 8x7B Chat"
-            },
-            {
-              "value": "pplx-70b-chat",
-              "title": "Perplexity 70B Chat"
+              "title": "Mixtral 8×7B 16k"
             }
           ]
         }
@@ -224,40 +188,28 @@
           "default": "global",
           "data": [
             {
-              "title": "Follow global model",
-              "value": "global"
+              "value": "global",
+              "title": "Follow global model"
+            },
+            {
+              "value": "llama-3-sonar-small-32k-chat",
+              "title": "Sonar Small 7B 32k"
+            },
+            {
+              "value": "llama-3-sonar-large-32k-chat",
+              "title": "Sonar Large 70B 32k"
+            },
+            {
+              "value": "llama-3-8b-instruct",
+              "title": "Llama3 8B 8k"
+            },
+            {
+              "value": "llama-3-70b-instruct",
+              "title": "Llama3 70B 8k"
             },
             {
               "value": "mixtral-8x7b-instruct",
-              "title": "Mixtral 8x7b Instruct"
-            },
-            {
-              "value": "mistral-7b-instruct",
-              "title": "Mistral 7B Instruct"
-            },
-            {
-              "value": "llama-2-70b-chat",
-              "title": "Llama2 70B Chat"
-            },
-            {
-              "value": "codellama-34b-instruct",
-              "title": "CodeLlama 34B Instruct"
-            },
-            {
-              "value": "codellama-70b-instruct",
-              "title": "CodeLlama 70B Instruct"
-            },
-            {
-              "value": "sonar-small-chat",
-              "title": "Sonar small 7B Chat"
-            },
-            {
-              "value": "sonar-medium-chat",
-              "title": "Sonar medium 8x7B Chat"
-            },
-            {
-              "value": "pplx-70b-chat",
-              "title": "Perplexity 70B Chat"
+              "title": "Mixtral 8×7B 16k"
             }
           ]
         }
@@ -286,40 +238,28 @@
           "default": "global",
           "data": [
             {
-              "title": "Follow global model",
-              "value": "global"
+              "value": "global",
+              "title": "Follow global model"
+            },
+            {
+              "value": "llama-3-sonar-small-32k-chat",
+              "title": "Sonar Small 7B 32k"
+            },
+            {
+              "value": "llama-3-sonar-large-32k-chat",
+              "title": "Sonar Large 70B 32k"
+            },
+            {
+              "value": "llama-3-8b-instruct",
+              "title": "Llama3 8B 8k"
+            },
+            {
+              "value": "llama-3-70b-instruct",
+              "title": "Llama3 70B 8k"
             },
             {
               "value": "mixtral-8x7b-instruct",
-              "title": "Mixtral 8x7b Instruct"
-            },
-            {
-              "value": "mistral-7b-instruct",
-              "title": "Mistral 7B Instruct"
-            },
-            {
-              "value": "llama-2-70b-chat",
-              "title": "Llama2 70B Chat"
-            },
-            {
-              "value": "codellama-34b-instruct",
-              "title": "CodeLlama 34B Instruct"
-            },
-            {
-              "value": "codellama-70b-instruct",
-              "title": "CodeLlama 70B Instruct"
-            },
-            {
-              "value": "sonar-small-chat",
-              "title": "Sonar small 7B Chat"
-            },
-            {
-              "value": "sonar-medium-chat",
-              "title": "Sonar medium 8x7B Chat"
-            },
-            {
-              "value": "pplx-70b-chat",
-              "title": "Perplexity 70B Chat"
+              "title": "Mixtral 8×7B 16k"
             }
           ]
         }
@@ -342,17 +282,17 @@
         {
           "name": "ask_sys_prompt",
           "title": "System Prompt",
-          "description": "Online LLMs use current date instead!",
+          "description": "System prompt for asking AI.",
           "type": "textfield",
           "default": "You are a helpful assistant.",
           "required": false
         },
         {
           "name": "ask_default_question",
-          "title": "User Prompt",
+          "title": "Default Question",
           "description": "Default question for selected text if none provided.",
           "type": "textfield",
-          "default": "Explain this as concise and simple as possible",
+          "default": "Explain as concise and simple as possible.",
           "required": false
         },
         {
@@ -364,52 +304,36 @@
           "default": "global",
           "data": [
             {
-              "title": "Follow global model",
-              "value": "global"
+              "value": "global",
+              "title": "Follow global model"
             },
             {
-              "value": "sonar-small-online",
-              "title": "Sonar small 7B Online"
+              "value": "llama-3-sonar-small-32k-online",
+              "title": "Sonar Small 7B Online"
             },
             {
-              "value": "sonar-medium-online",
-              "title": "Sonar medium 8x7B Online"
+              "value": "llama-3-sonar-large-32k-online",
+              "title": "Sonar Large 70B Online"
             },
             {
-              "value": "pplx-70b-online",
-              "title": "Perplexity 70B Online"
+              "value": "llama-3-sonar-small-32k-chat",
+              "title": "Sonar Small 7B 32k"
+            },
+            {
+              "value": "llama-3-sonar-large-32k-chat",
+              "title": "Sonar Large 70B 32k"
+            },
+            {
+              "value": "llama-3-8b-instruct",
+              "title": "Llama3 8B 8k"
+            },
+            {
+              "value": "llama-3-70b-instruct",
+              "title": "Llama3 70B 8k"
             },
             {
               "value": "mixtral-8x7b-instruct",
-              "title": "Mixtral 8x7b Instruct"
-            },
-            {
-              "value": "mistral-7b-instruct",
-              "title": "Mistral 7B Instruct"
-            },
-            {
-              "value": "llama-2-70b-chat",
-              "title": "Llama2 70B Chat"
-            },
-            {
-              "value": "codellama-34b-instruct",
-              "title": "CodeLlama 34B Instruct"
-            },
-            {
-              "value": "codellama-70b-instruct",
-              "title": "CodeLlama 70B Instruct"
-            },
-            {
-              "value": "sonar-small-chat",
-              "title": "Sonar small 7B Chat"
-            },
-            {
-              "value": "sonar-medium-chat",
-              "title": "Sonar medium 8x7B Chat"
-            },
-            {
-              "value": "pplx-70b-chat",
-              "title": "Perplexity 70B Chat"
+              "title": "Mixtral 8×7B 16k"
             }
           ]
         }
@@ -443,7 +367,7 @@
           "title": "User Prompt",
           "description": "Default question for selected text if none provided.",
           "type": "textfield",
-          "default": "Explain the following code in detail. Start with a high-level overview",
+          "default": "Explain the following code in detail. Start with a high-level overview.",
           "required": false
         },
         {
@@ -452,43 +376,31 @@
           "type": "dropdown",
           "required": false,
           "title": "Model Override",
-          "default": "codellama-70b-instruct",
+          "default": "global",
           "data": [
             {
-              "title": "Follow global model",
-              "value": "global"
+              "value": "global",
+              "title": "Follow global model"
             },
             {
-              "value": "codellama-34b-instruct",
-              "title": "CodeLlama 34B Instruct"
+              "value": "llama-3-sonar-small-32k-chat",
+              "title": "Sonar Small 7B 32k"
             },
             {
-              "value": "codellama-70b-instruct",
-              "title": "CodeLlama 70B Instruct"
+              "value": "llama-3-sonar-large-32k-chat",
+              "title": "Sonar Large 70B 32k"
+            },
+            {
+              "value": "llama-3-8b-instruct",
+              "title": "Llama3 8B 8k"
+            },
+            {
+              "value": "llama-3-70b-instruct",
+              "title": "Llama3 70B 8k"
             },
             {
               "value": "mixtral-8x7b-instruct",
-              "title": "Mixtral 8x7b Instruct"
-            },
-            {
-              "value": "mistral-7b-instruct",
-              "title": "Mistral 7B Instruct"
-            },
-            {
-              "value": "llama-2-70b-chat",
-              "title": "Llama2 70B Chat"
-            },
-            {
-              "value": "sonar-small-chat",
-              "title": "Sonar small 7B Chat"
-            },
-            {
-              "value": "sonar-medium-chat",
-              "title": "Sonar medium 8x7B Chat"
-            },
-            {
-              "value": "pplx-70b-chat",
-              "title": "Perplexity 70B Chat"
+              "title": "Mixtral 8×7B 16k"
             }
           ]
         }
@@ -518,40 +430,28 @@
           "default": "global",
           "data": [
             {
-              "title": "Follow global model",
-              "value": "global"
+              "value": "global",
+              "title": "Follow global model"
+            },
+            {
+              "value": "llama-3-sonar-small-32k-chat",
+              "title": "Sonar Small 7B 32k"
+            },
+            {
+              "value": "llama-3-sonar-large-32k-chat",
+              "title": "Sonar Large 70B 32k"
+            },
+            {
+              "value": "llama-3-8b-instruct",
+              "title": "Llama3 8B 8k"
+            },
+            {
+              "value": "llama-3-70b-instruct",
+              "title": "Llama3 70B 8k"
             },
             {
               "value": "mixtral-8x7b-instruct",
-              "title": "Mixtral 8x7b Instruct"
-            },
-            {
-              "value": "mistral-7b-instruct",
-              "title": "Mistral 7B Instruct"
-            },
-            {
-              "value": "llama-2-70b-chat",
-              "title": "Llama2 70B Chat"
-            },
-            {
-              "value": "codellama-34b-instruct",
-              "title": "CodeLlama 34B Instruct"
-            },
-            {
-              "value": "codellama-70b-instruct",
-              "title": "CodeLlama 70B Instruct"
-            },
-            {
-              "value": "sonar-small-chat",
-              "title": "Sonar small 7B Chat"
-            },
-            {
-              "value": "sonar-medium-chat",
-              "title": "Sonar medium 8x7B Chat"
-            },
-            {
-              "value": "pplx-70b-chat",
-              "title": "Perplexity 70B Chat"
+              "title": "Mixtral 8×7B 16k"
             }
           ]
         }
@@ -581,40 +481,28 @@
           "default": "global",
           "data": [
             {
-              "title": "Follow global model",
-              "value": "global"
+              "value": "global",
+              "title": "Follow global model"
+            },
+            {
+              "value": "llama-3-sonar-small-32k-chat",
+              "title": "Sonar Small 7B 32k"
+            },
+            {
+              "value": "llama-3-sonar-large-32k-chat",
+              "title": "Sonar Large 70B 32k"
+            },
+            {
+              "value": "llama-3-8b-instruct",
+              "title": "Llama3 8B 8k"
+            },
+            {
+              "value": "llama-3-70b-instruct",
+              "title": "Llama3 70B 8k"
             },
             {
               "value": "mixtral-8x7b-instruct",
-              "title": "Mixtral 8x7b Instruct"
-            },
-            {
-              "value": "mistral-7b-instruct",
-              "title": "Mistral 7B Instruct"
-            },
-            {
-              "value": "llama-2-70b-chat",
-              "title": "Llama2 70B Chat"
-            },
-            {
-              "value": "codellama-34b-instruct",
-              "title": "CodeLlama 34B Instruct"
-            },
-            {
-              "value": "codellama-70b-instruct",
-              "title": "CodeLlama 70B Instruct"
-            },
-            {
-              "value": "sonar-small-chat",
-              "title": "Sonar small 7B Chat"
-            },
-            {
-              "value": "sonar-medium-chat",
-              "title": "Sonar medium 8x7B Chat"
-            },
-            {
-              "value": "pplx-70b-chat",
-              "title": "Perplexity 70B Chat"
+              "title": "Mixtral 8×7B 16k"
             }
           ]
         }
@@ -644,40 +532,28 @@
           "default": "global",
           "data": [
             {
-              "title": "Follow global model",
-              "value": "global"
+              "value": "global",
+              "title": "Follow global model"
+            },
+            {
+              "value": "llama-3-sonar-small-32k-chat",
+              "title": "Sonar Small 7B 32k"
+            },
+            {
+              "value": "llama-3-sonar-large-32k-chat",
+              "title": "Sonar Large 70B 32k"
+            },
+            {
+              "value": "llama-3-8b-instruct",
+              "title": "Llama3 8B 8k"
+            },
+            {
+              "value": "llama-3-70b-instruct",
+              "title": "Llama3 70B 8k"
             },
             {
               "value": "mixtral-8x7b-instruct",
-              "title": "Mixtral 8x7b Instruct"
-            },
-            {
-              "value": "mistral-7b-instruct",
-              "title": "Mistral 7B Instruct"
-            },
-            {
-              "value": "llama-2-70b-chat",
-              "title": "Llama2 70B Chat"
-            },
-            {
-              "value": "codellama-34b-instruct",
-              "title": "CodeLlama 34B Instruct"
-            },
-            {
-              "value": "codellama-70b-instruct",
-              "title": "CodeLlama 70B Instruct"
-            },
-            {
-              "value": "sonar-small-chat",
-              "title": "Sonar small 7B Chat"
-            },
-            {
-              "value": "sonar-medium-chat",
-              "title": "Sonar medium 8x7B Chat"
-            },
-            {
-              "value": "pplx-70b-chat",
-              "title": "Perplexity 70B Chat"
+              "title": "Mixtral 8×7B 16k"
             }
           ]
         }
@@ -707,40 +583,28 @@
           "default": "global",
           "data": [
             {
-              "title": "Follow global model",
-              "value": "global"
+              "value": "global",
+              "title": "Follow global model"
+            },
+            {
+              "value": "llama-3-sonar-small-32k-chat",
+              "title": "Sonar Small 7B 32k"
+            },
+            {
+              "value": "llama-3-sonar-large-32k-chat",
+              "title": "Sonar Large 70B 32k"
+            },
+            {
+              "value": "llama-3-8b-instruct",
+              "title": "Llama3 8B 8k"
+            },
+            {
+              "value": "llama-3-70b-instruct",
+              "title": "Llama3 70B 8k"
             },
             {
               "value": "mixtral-8x7b-instruct",
-              "title": "Mixtral 8x7b Instruct"
-            },
-            {
-              "value": "mistral-7b-instruct",
-              "title": "Mistral 7B Instruct"
-            },
-            {
-              "value": "llama-2-70b-chat",
-              "title": "Llama2 70B Chat"
-            },
-            {
-              "value": "codellama-34b-instruct",
-              "title": "CodeLlama 34B Instruct"
-            },
-            {
-              "value": "codellama-70b-instruct",
-              "title": "CodeLlama 70B Instruct"
-            },
-            {
-              "value": "sonar-small-chat",
-              "title": "Sonar small 7B Chat"
-            },
-            {
-              "value": "sonar-medium-chat",
-              "title": "Sonar medium 8x7B Chat"
-            },
-            {
-              "value": "pplx-70b-chat",
-              "title": "Perplexity 70B Chat"
+              "title": "Mixtral 8×7B 16k"
             }
           ]
         }
@@ -770,40 +634,28 @@
           "default": "global",
           "data": [
             {
-              "title": "Follow global model",
-              "value": "global"
+              "value": "global",
+              "title": "Follow global model"
+            },
+            {
+              "value": "llama-3-sonar-small-32k-chat",
+              "title": "Sonar Small 7B 32k"
+            },
+            {
+              "value": "llama-3-sonar-large-32k-chat",
+              "title": "Sonar Large 70B 32k"
+            },
+            {
+              "value": "llama-3-8b-instruct",
+              "title": "Llama3 8B 8k"
+            },
+            {
+              "value": "llama-3-70b-instruct",
+              "title": "Llama3 70B 8k"
             },
             {
               "value": "mixtral-8x7b-instruct",
-              "title": "Mixtral 8x7b Instruct"
-            },
-            {
-              "value": "mistral-7b-instruct",
-              "title": "Mistral 7B Instruct"
-            },
-            {
-              "value": "llama-2-70b-chat",
-              "title": "Llama2 70B Chat"
-            },
-            {
-              "value": "codellama-34b-instruct",
-              "title": "CodeLlama 34B Instruct"
-            },
-            {
-              "value": "codellama-70b-instruct",
-              "title": "CodeLlama 70B Instruct"
-            },
-            {
-              "value": "sonar-small-chat",
-              "title": "Sonar small 7B Chat"
-            },
-            {
-              "value": "sonar-medium-chat",
-              "title": "Sonar medium 8x7B Chat"
-            },
-            {
-              "value": "pplx-70b-chat",
-              "title": "Perplexity 70B Chat"
+              "title": "Mixtral 8×7B 16k"
             }
           ]
         }
@@ -833,40 +685,28 @@
           "default": "global",
           "data": [
             {
-              "title": "Follow global model",
-              "value": "global"
+              "value": "global",
+              "title": "Follow global model"
+            },
+            {
+              "value": "llama-3-sonar-small-32k-chat",
+              "title": "Sonar Small 7B 32k"
+            },
+            {
+              "value": "llama-3-sonar-large-32k-chat",
+              "title": "Sonar Large 70B 32k"
+            },
+            {
+              "value": "llama-3-8b-instruct",
+              "title": "Llama3 8B 8k"
+            },
+            {
+              "value": "llama-3-70b-instruct",
+              "title": "Llama3 70B 8k"
             },
             {
               "value": "mixtral-8x7b-instruct",
-              "title": "Mixtral 8x7b Instruct"
-            },
-            {
-              "value": "mistral-7b-instruct",
-              "title": "Mistral 7B Instruct"
-            },
-            {
-              "value": "llama-2-70b-chat",
-              "title": "Llama2 70B Chat"
-            },
-            {
-              "value": "codellama-34b-instruct",
-              "title": "CodeLlama 34B Instruct"
-            },
-            {
-              "value": "codellama-70b-instruct",
-              "title": "CodeLlama 70B Instruct"
-            },
-            {
-              "value": "sonar-small-chat",
-              "title": "Sonar small 7B Chat"
-            },
-            {
-              "value": "sonar-medium-chat",
-              "title": "Sonar medium 8x7B Chat"
-            },
-            {
-              "value": "pplx-70b-chat",
-              "title": "Perplexity 70B Chat"
+              "title": "Mixtral 8×7B 16k"
             }
           ]
         }
@@ -884,7 +724,7 @@
           "title": "Prompt",
           "description": "Enter instructions for breaking down a project description into a list of tasks.",
           "type": "textfield",
-          "default": "Turn the following project title or project description into a list of todos. Each todo starts with '- [ ] ' and ends with a period. Example: '- [ ] Write a summary of the project.'",
+          "default": "Turn the following project title or project description into a list of todos. Each todo starts with '- [ ] ' and ends with a period. Example: '- [ ] Pick up parcel'",
           "required": false
         },
         {
@@ -896,40 +736,28 @@
           "default": "global",
           "data": [
             {
-              "title": "Follow global model",
-              "value": "global"
+              "value": "global",
+              "title": "Follow global model"
+            },
+            {
+              "value": "llama-3-sonar-small-32k-chat",
+              "title": "Sonar Small 7B 32k"
+            },
+            {
+              "value": "llama-3-sonar-large-32k-chat",
+              "title": "Sonar Large 70B 32k"
+            },
+            {
+              "value": "llama-3-8b-instruct",
+              "title": "Llama3 8B 8k"
+            },
+            {
+              "value": "llama-3-70b-instruct",
+              "title": "Llama3 70B 8k"
             },
             {
               "value": "mixtral-8x7b-instruct",
-              "title": "Mixtral 8x7b Instruct"
-            },
-            {
-              "value": "mistral-7b-instruct",
-              "title": "Mistral 7B Instruct"
-            },
-            {
-              "value": "llama-2-70b-chat",
-              "title": "Llama2 70B Chat"
-            },
-            {
-              "value": "codellama-34b-instruct",
-              "title": "CodeLlama 34B Instruct"
-            },
-            {
-              "value": "codellama-70b-instruct",
-              "title": "CodeLlama 70B Instruct"
-            },
-            {
-              "value": "sonar-small-chat",
-              "title": "Sonar small 7B Chat"
-            },
-            {
-              "value": "sonar-medium-chat",
-              "title": "Sonar medium 8x7B Chat"
-            },
-            {
-              "value": "pplx-70b-chat",
-              "title": "Perplexity 70B Chat"
+              "title": "Mixtral 8×7B 16k"
             }
           ]
         }
@@ -951,39 +779,27 @@
       "description": "LLM model to use for all your commands.",
       "type": "dropdown",
       "required": true,
-      "default": "sonar-medium-chat",
+      "default": "llama-3-sonar-large-32k-chat",
       "data": [
         {
+          "value": "llama-3-sonar-small-32k-chat",
+          "title": "Sonar Small 7B 32k"
+        },
+        {
+          "value": "llama-3-sonar-large-32k-chat",
+          "title": "Sonar Large 70B 32k"
+        },
+        {
+          "value": "llama-3-8b-instruct",
+          "title": "Llama3 8B 8k"
+        },
+        {
+          "value": "llama-3-70b-instruct",
+          "title": "Llama3 70B 8k"
+        },
+        {
           "value": "mixtral-8x7b-instruct",
-          "title": "Mixtral 8x7b Instruct"
-        },
-        {
-          "value": "mistral-7b-instruct",
-          "title": "Mistral 7B Instruct"
-        },
-        {
-          "value": "llama-2-70b-chat",
-          "title": "Llama2 70B Chat"
-        },
-        {
-          "value": "codellama-34b-instruct",
-          "title": "CodeLlama 34B Instruct"
-        },
-        {
-          "value": "codellama-70b-instruct",
-          "title": "CodeLlama 70B Instruct"
-        },
-        {
-          "value": "sonar-small-chat",
-          "title": "Sonar small 7B Chat"
-        },
-        {
-          "value": "sonar-medium-chat",
-          "title": "Sonar medium 8x7B Chat"
-        },
-        {
-          "value": "pplx-70b-chat",
-          "title": "Perplexity 70B Chat"
+          "title": "Mixtral 8×7B 16k"
         }
       ]
     },
