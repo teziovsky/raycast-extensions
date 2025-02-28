@@ -1,5 +1,38 @@
 # Safari Changelog
 
+## [Chore: Moved contributor to past contributors list] - 2025-02-27
+
+## [Update] - 2025-02-21
+
+AI Tools to;
+- Search Bookmarks
+- Search History
+- Search Reading List
+- Add to Reading List
+- Open (in Safari)
+
+## [Update] - 2025-02-14
+
+- Added a preference to enable pinyin search for Chinese characters.
+
+## [Update] - 2025-02-12
+
+- Add an action to set the color of a bookmark tag.
+
+## [Chore: Moved contributor to past contributors list] - 2025-01-15
+
+## [Update] - 2025-01-12
+
+- Adds a preference to "Copy Title as Link to Clipboard" command to clean up titles with AI.
+
+## [Update] - 2025-01-07
+
+- Adds a "Copy Title as Link to Clipboard" command to copy the current Safari tab in Markdown format.
+
+## [Update] - 2025-01-06
+
+- Adds a "Copy to Clipboard" command to copy the current Safari tab url.
+
 ## [Chore: Renamed title in Dropdown] - 2024-12-20
 
 ## [Improve] - 2024-12-13

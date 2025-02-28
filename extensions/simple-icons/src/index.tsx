@@ -15,7 +15,7 @@ import {
   showToast,
 } from "@raycast/api";
 import debounce from "lodash/debounce.js";
-import { titleToSlug } from "simple-icons/sdk";
+import { getIconSlug } from "simple-icons/sdk";
 import { CopyFontEntities, LaunchCommand, Supports, actions, defaultActionsOrder } from "./actions.js";
 import {
   cacheAssetPack,
@@ -48,15 +48,13 @@ export default function Command({ launchContext }: LaunchProps<{ launchContext?:
 
     await showToast({
       style: Toast.Style.Animated,
-      title: "",
-      message: "Loading Icons",
+      title: "Loading Icons",
     });
 
     await cacheAssetPack(version).catch(async () => {
       await showToast({
         style: Toast.Style.Failure,
-        title: "",
-        message: "Failed to download icons asset",
+        title: "Failed to download icons asset",
       });
       await setTimeout(1200);
     });
@@ -65,7 +63,7 @@ export default function Command({ launchContext }: LaunchProps<{ launchContext?:
     });
     const icons = json.map((icon) => ({
       ...icon,
-      slug: icon.slug || titleToSlug(icon.title),
+      slug: getIconSlug(icon),
     }));
 
     setIcons(icons);
@@ -74,14 +72,12 @@ export default function Command({ launchContext }: LaunchProps<{ launchContext?:
     if (icons.length > 0) {
       await showToast({
         style: Toast.Style.Success,
-        title: "",
-        message: `${icons.length} icons loaded`,
+        title: `${icons.length} icons loaded`,
       });
     } else {
       await showToast({
         style: Toast.Style.Failure,
-        title: "",
-        message: "Unable to load icons",
+        title: "Unable to load icons",
       });
     }
   };
@@ -150,8 +146,9 @@ export default function Command({ launchContext }: LaunchProps<{ launchContext?:
       }
     >
       {(!isLoading || !aiIsLoading || !version) &&
+        // Limit to 500 icons to avoid performance issues
         searchResult.slice(0, 500).map((icon) => {
-          const slug = icon.slug || titleToSlug(icon.title);
+          const slug = getIconSlug(icon);
           const fileLink = `pack/simple-icons-${version}/icons/${slug}.svg`;
           const aliases = getAliases(icon);
 
@@ -244,7 +241,7 @@ export default function Command({ launchContext }: LaunchProps<{ launchContext?:
                                 <ActionPanel.Section>
                                   <LaunchCommand
                                     callbackLaunchOptions={launchContext.callbackLaunchOptions}
-                                    icon={{ ...icon, slug: icon.slug || titleToSlug(icon.title) }}
+                                    icon={{ ...icon, slug: getIconSlug(icon) }}
                                     version={version}
                                   />
                                 </ActionPanel.Section>

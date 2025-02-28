@@ -1,5 +1,13 @@
 # Bitwarden Changelog
 
+## [Feature] - 2025-02-19
+
+- Add fuzzy search for vault and include url or username in search
+
+## [Feature] - 2025-01-02
+
+- Add button to show/hide password in unlock form
+
 ## [Fix] - 2024-10-04
 
 - Simplify number and special effects on min fields to prevent re-render loop
