@@ -1,5 +1,10 @@
 # Prompt Explorer Extension Changelog
 
+## [AI Extensions updates] - 2025-03-04
+
+- Add AI Extensions to presets
+- Render inline AI Extensions in prompts
+
 ## [Update] - 2025-02-27
 
 - Updated dependencies

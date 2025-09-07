@@ -9,7 +9,7 @@
     "pernielsentikaer",
     "GLaDO8"
   ],
-  "version": "1.6.0",
+  "version": "1.6.1",
   "license": "MIT",
   "preferences": [
     {
@@ -63,5 +63,9 @@
     "fix-lint": "ray lint --fix",
     "lint": "ray lint",
     "publish": "npx @raycast/api@latest publish"
-  }
+  },
+  "platforms": [
+    "macOS",
+    "Windows"
+  ]
 }

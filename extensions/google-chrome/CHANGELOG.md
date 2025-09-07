@@ -1,5 +1,23 @@
 # Google Chrome Changelog
 
+## [Chore: Updated contributors] - 2025-09-03
+
+## [Add Refresh Tab Command] - 2025-08-25
+
+- Add Reload Tab action to refresh a selected tab in the Search Tab command.
+
+## [Fix New Tab Command React Hooks Violation] - 2025-05-27
+
+- Fix React Rules of Hooks violation causing TypeError when opening new tabs.
+- Improve error handling for profile and history data loading.
+
+## [Add Omnibox-like search behavior for New Tab] - 2025-05-07
+
+- Add support for entering URLs or search terms in a single input field, mimicking Chrome's Omnibox behavior.
+
+## [Add Copy Title action for Search Tab] - 2025-04-22
+- Add the ability to create new incognito window.
+
 ## [Add Copy Title action for Search Tab] - 2025-02-11
 - Add Copy Title action for Search Tab command.
 

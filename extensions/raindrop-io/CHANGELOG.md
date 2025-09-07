@@ -1,12 +1,33 @@
 # Raindrop.io Extension Changelog
 
+## [Enhancements] - 2025-08-30
+
+- Prefill Add form from launch context (URL/title) for smoother adding from external sources; increases universality and works well with minimal/keyboard-centric browsers like QuteBrowser.
+
+## [Enhancements] - 2025-08-06
+
+- Use Browser Extension API when available for retrieving URL and title
+
+## [Enhancements] - 2025-08-04
+
+- Add support for Zen Browser.
+
+## [Enhancements] - 2025-05-05
+
+- Add Edit Bookmark action ([#18855](https://github.com/raycast/extensions/issues/18855))
+
+## [Enhancements] - 2025-04-22
+
+- Add option to fetch all results, i.e. perform multiple API requests for each result page
+- Set maximum items for raindrop requests
+
 ## [Enhancements] - 2025-02-05
 
-Add option to specify sorting behavior
+- Add option to specify sorting behavior
 
 ## [Enhancements] - 2025-01-05
 
-Add tags display preference and update bookmark item rendering
+- Add tags display preference and update bookmark item rendering
 
 ## [Enhancements] - 2025-01-02
 
