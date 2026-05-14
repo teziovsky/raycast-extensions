@@ -10,8 +10,8 @@ export default function ValidExtensions({
   forkedExtensionFolders,
   onPop,
 }: {
-  forkedExtensionFolders: string[];
-  onPop: () => void;
+  readonly forkedExtensionFolders: string[];
+  readonly onPop: () => void;
 }) {
   const { pop } = useNavigation();
   const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +43,7 @@ export default function ValidExtensions({
                 icon={Icon.NewDocument}
                 title="Fork"
                 onAction={catchError(async () => {
-                  await operation.fork(x.folder);
+                  await operation.fork(`extensions/${x.folder}`);
                   onPop();
                   pop();
                 })}

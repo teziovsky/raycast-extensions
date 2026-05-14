@@ -1,7 +1,14 @@
-import { Clipboard, Toast, confirmAlert, openExtensionPreferences } from "@raycast/api";
+import path from "node:path";
+import { Clipboard, LocalStorage, Toast, confirmAlert, openExtensionPreferences, showToast } from "@raycast/api";
 import * as api from "./api.js";
+import { catchError } from "./errors.js";
 import * as git from "./git.js";
-import { getCommitsText } from "./utils.js";
+import { getCloudSyncedPathRoot, getCommitsText, simplifyPath } from "./utils.js";
+
+/**
+ * The storage key prefix for acknowledged cloud-synced repository path warnings.
+ */
+const cloudSyncedRepositoryPathWarningStorageKey = "cloud-synced-repository-path-warning:";
 
 /**
  * Class to manage operations related to forked extensions.
@@ -44,15 +51,34 @@ class Operation {
         return;
       }
 
+      await git.resolveRepositoryPath();
+      const localForkedRepository = await git.getManagedForkedRepository();
+      const forkedRepository = localForkedRepository || (await api.getForkedRepository());
+      await git.resolveRepositoryPath(forkedRepository);
+
+      const shouldContinue = await this.confirmCloudSyncedRepositoryPath();
+      if (!shouldContinue) return;
+
       this.showToast({ title: "Initializing repository" });
-      const forkedRepository = await git.initRepository();
-      await git.setUpstream(forkedRepository);
-      return forkedRepository;
+      const initializedRepository = await git.initRepository(forkedRepository);
+      await git.checkIfSparseCheckoutEnabled();
+      await git.setUpstream(initializedRepository);
+      return initializedRepository;
     } finally {
       this.isOperating = false;
       this.hideToast();
     }
   };
+
+  /**
+   * Converts the current repository from full checkout to sparse checkout.
+   */
+  convertFullCheckoutToSparseCheckout = () =>
+    this.spawn(
+      git.convertFullCheckoutToSparseCheckout,
+      "Enabling sparse checkout",
+      "Enable sparse checkout successfully",
+    );
 
   /**
    * Synchronizes the forked repository with the upstream repository both on GitHub and local.
@@ -69,10 +95,47 @@ class Operation {
     );
 
   /**
+   * Warns once before initializing a repository inside a potentially cloud-synced location.
+   * @returns Whether the initialization should continue.
+   */
+  private confirmCloudSyncedRepositoryPath = async () => {
+    const cloudSyncedPathRoot = getCloudSyncedPathRoot(git.repositoryPath);
+    if (!cloudSyncedPathRoot) return true;
+
+    const hasRepository = await git.fileExists(path.join(git.repositoryPath, ".git"));
+    if (hasRepository) return true;
+
+    const warningKey = `${cloudSyncedRepositoryPathWarningStorageKey}${git.repositoryPath}`;
+    const acknowledgedWarning = await LocalStorage.getItem<string>(warningKey);
+    if (acknowledgedWarning === "true") return true;
+
+    return new Promise<boolean>((resolve, reject) => {
+      confirmAlert({
+        title: "Repository Path May Be Cloud-Synced",
+        message: `Your repository path ${simplifyPath(git.repositoryPath)} is inside ${cloudSyncedPathRoot}. If iCloud Drive or another cloud sync tool manages this folder, Git metadata may be duplicated or corrupted. We recommend choosing ~/Developer so the repository can be created at ~/Developer/forked-extensions instead.`,
+        primaryAction: {
+          title: "Open Preferences",
+          onAction: catchError(async () => {
+            await openExtensionPreferences();
+            resolve(false);
+          }),
+        },
+        dismissAction: {
+          title: "Continue Anyway",
+          onAction: catchError(async () => {
+            await LocalStorage.setItem(warningKey, "true");
+            resolve(true);
+          }),
+        },
+      }).catch(reject);
+    });
+  };
+
+  /**
    * Pulls the latest changes from the remote forked repository.
    * @remarks This will checkout to main branch and merge the forked main branch into it.
    */
-  pull = async () => this.spawn(async () => git.syncFork(), "Pulling changes", "Pulled successfully");
+  pull = async () => this.spawn(async () => git.pullFork(), "Pulling changes", "Pulled successfully");
 
   /**
    * Forks an extension by adding it to the sparse-checkout list.
@@ -86,32 +149,46 @@ class Operation {
           throw new Error(
             "Forked repository not found. Please try to rerun the extension to initialize the repository.",
           );
-        const { behind } = await api.compareTwoCommits(forkedRepository);
+        const { ahead, behind } = await api.compareTwoCommits(forkedRepository);
+
+        if (ahead > 0) {
+          await showToast({
+            style: Toast.Style.Failure,
+            title: "Cannot Fork Extension",
+            message: "You have commits ahead of remote on GitHub, please reset them if necessary.",
+          });
+          return;
+        }
+
         if (behind > 0) {
-          await confirmAlert({
-            title: "Repository Outdated",
-            message: `Your forked repository on GitHub is ${getCommitsText(behind)} behind the upstream repository. Do you want to sync it now?`,
-            primaryAction: {
-              title: "Sync Now",
-              onAction: async () => {
-                // Set `isOperating` to false to allow `sync` to run.
-                this.isOperating = false;
-                await this.sync();
-                // Manually show the toast again because the previous sync operation completed the toast.
-                await this.showToast({ title: "Forking extension" });
-                await git.sparseCheckoutAdd(extensionFolder);
-                this.completeToast("Forked successfully");
+          return new Promise<void>((resolve, reject) => {
+            confirmAlert({
+              title: "Repository Outdated",
+              message: `Your forked repository on GitHub is ${getCommitsText(behind)} behind the upstream repository. Do you want to sync it now?`,
+              primaryAction: {
+                title: "Sync Now",
+                onAction: catchError(async () => {
+                  // Set `isOperating` to false to allow `sync` to run.
+                  this.isOperating = false;
+                  await this.sync();
+                  // Manually show the toast again because the previous sync operation completed the toast.
+                  await this.showToast({ title: "Forking extension" });
+                  await git.sparseCheckoutAdd([extensionFolder]);
+                  this.completeToast("Forked successfully");
+                  resolve();
+                }),
               },
-            },
-            dismissAction: {
-              title: "Fork Anyway",
-              onAction: async () => {
-                await git.sparseCheckoutAdd(extensionFolder);
+              dismissAction: {
+                title: "Fork Anyway",
+                onAction: catchError(async () => {
+                  await git.sparseCheckoutAdd([extensionFolder]);
+                  resolve();
+                }),
               },
-            },
+            }).catch(reject);
           });
         } else {
-          await git.sparseCheckoutAdd(extensionFolder);
+          await git.sparseCheckoutAdd([extensionFolder]);
         }
       },
       "Forking extension",
@@ -123,7 +200,37 @@ class Operation {
    * @param extensionFolder The folder of the extension to remove.
    */
   remove = async (extensionFolder: string) =>
-    this.spawn(async () => git.sparseCheckoutRemove(extensionFolder), "Removing extension", "Removed successfully");
+    this.spawn(async () => git.sparseCheckoutRemove([extensionFolder]), "Removing extension", "Removed successfully");
+
+  /**
+   * Adds a pattern to the sparse-checkout list.
+   * @param pattern The pattern of the sparse-checkout to add.
+   */
+  addSparseCheckoutPattern = async (pattern: string, onList?: () => Promise<void>) => {
+    this.spawn(
+      async () => {
+        await git.sparseCheckoutAdd([pattern]);
+        if (onList) await onList();
+      },
+      "Adding sparse-checkout pattern",
+      "Added successfully",
+    );
+  };
+
+  /**
+   * Removes a pattern from the sparse-checkout list.
+   * @param pattern The pattern of the sparse-checkout to remove.
+   */
+  removeSparseCheckoutPattern = async (pattern: string, onList?: () => Promise<void>) => {
+    this.spawn(
+      async () => {
+        await git.sparseCheckoutRemove([pattern]);
+        if (onList) await onList();
+      },
+      "Removing sparse-checkout pattern",
+      "Removed successfully",
+    );
+  };
 
   /**
    * The singleton instance version of the the `showFailureToast` method.
@@ -131,8 +238,8 @@ class Operation {
    * @param options Optional toast options to customize the failure toast.
    */
   showFailureToast = async (error: unknown, options?: Toast.Options) => {
-    const title = error instanceof Error ? error.name : "Error";
-    const message = error instanceof Error ? error.message : String(error);
+    const title = error instanceof Error ? error.name : (options?.title ?? "Error");
+    const message = error instanceof Error ? error.message : (options?.message ?? String(error));
     const copyLogsAction = {
       title: "Copy Logs",
       onAction: () => Clipboard.copy([title, message].join("\n")),
@@ -163,7 +270,7 @@ class Operation {
     if (this.isOperating) return;
     try {
       this.isOperating = true;
-      await git.isStatusClean();
+      await git.checkIfStatusClean();
       this.showToast({ title: loadingMessage });
       const result = await task();
       if (completedMessage) {

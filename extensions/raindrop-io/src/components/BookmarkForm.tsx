@@ -1,10 +1,10 @@
 import { Action, ActionPanel, Form, getPreferenceValues, Icon } from "@raycast/api";
-import { FormValidation, useCachedState, useForm } from "@raycast/utils";
-import fetch from "node-fetch";
-import { useEffect, useRef, useState } from "react";
+import { FormValidation, useForm } from "@raycast/utils";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FormValues } from "../types";
 
-import { useRequest } from "../hooks/useRequest";
+import { buildCollectionsOptions } from "../helpers/collections";
+import { useCollections } from "../hooks/useCollections";
 import { useTags } from "../hooks/useTags";
 import { createCollection, createBookmark, getLinkTitle } from "../helpers/utils";
 
@@ -37,6 +37,7 @@ async function updateBookmark({
     body: JSON.stringify({
       link: values.link.trim(),
       title: values.title,
+      note: values.note,
       collectionId,
       tags: values.tags,
       pleaseParse: {},
@@ -58,12 +59,14 @@ type BookmarkFormProps = {
 export const BookmarkForm = (props: BookmarkFormProps) => {
   const mode = props.bookmarkId ? "edit" : "create";
   const preferences = getPreferenceValues<Preferences>();
-  const [collection] = useCachedState("selected-collection", "0");
-  const { collections } = useRequest({ collection });
+  const { data: collectionsData, isLoading: isLoadingCollections, error: collectionsError } = useCollections();
   const { data: tags } = useTags();
   const [dropdownValue, setDropdownValue] = useState(props.defaultValues?.collection ?? "-1");
   const [showCollectionCreation, setShowCollectionCreation] = useState(false);
   const linkRef = useRef<string>(props.defaultValues?.link ?? "");
+  const collections = useMemo(() => {
+    return collectionsData?.result ? buildCollectionsOptions(collectionsData) : [];
+  }, [collectionsData]);
   const { handleSubmit, itemProps, setValue, reset, focus } = useForm<FormValues>({
     async onSubmit(values) {
       props.onWillSave?.();
@@ -159,9 +162,11 @@ export const BookmarkForm = (props: BookmarkFormProps) => {
         }}
       />
       <Form.TextField {...itemProps.title} title="Title" placeholder="Example title" />
+      <Form.TextArea {...itemProps.note} title="Note" placeholder="Add a note" />
       <Form.Dropdown
         {...itemProps.collection}
         title="Collection"
+        isLoading={isLoadingCollections}
         value={dropdownValue}
         onChange={(newValue: string) => {
           setShowCollectionCreation(newValue === "-2");
@@ -171,21 +176,32 @@ export const BookmarkForm = (props: BookmarkFormProps) => {
         <Form.Dropdown.Item key="-2" value="-2" title="Create Collection" icon={Icon.Plus} />
         <Form.Dropdown.Item key="-1" value="-1" title="Unsorted" icon={Icon.Tray} />
         <Form.Dropdown.Section title="Collections">
-          {collections.map(({ value, label, name }) => (
+          {collectionsError ? (
             <Form.Dropdown.Item
-              key={value}
-              value={`${value ?? "-1"}`}
-              title={name ? `${name} (${label})` : label}
-              icon={Icon.Folder}
+              key="collections-error"
+              value="-1"
+              title="Unable to load collections"
+              icon={Icon.ExclamationMark}
             />
-          ))}
+          ) : (
+            collections.map(({ value, label, name, cover }) => (
+              <Form.Dropdown.Item
+                key={value}
+                value={`${value ?? "-1"}`}
+                title={name && name !== label ? `${name} (${label})` : label}
+                icon={cover ? { source: cover } : { source: Icon.Folder }}
+              />
+            ))
+          )}
         </Form.Dropdown.Section>
       </Form.Dropdown>
       {showCollectionCreation && (
         <Form.TextField {...itemProps.newCollection} title="New Collection" placeholder="Name" />
       )}
       <Form.TagPicker {...itemProps.tags} title="Tags">
-        {tags?.items?.map(({ _id }) => <Form.TagPicker.Item key={_id} value={_id} title={_id} />)}
+        {tags?.items?.map(({ _id }) => (
+          <Form.TagPicker.Item key={_id} value={_id} title={_id} />
+        ))}
       </Form.TagPicker>
     </Form>
   );

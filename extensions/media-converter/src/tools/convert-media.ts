@@ -1,15 +1,20 @@
-import { convertMedia } from "../utils/converter";
+import { convertMedia, ConvertOptions } from "../utils/converter";
 import {
   type QualitySettings,
   type QualityLevel,
   type OutputImageExtension,
   type OutputAudioExtension,
   type OutputVideoExtension,
-  /* type AllOutputExtension, */
+  type AllOutputExtension,
   type ImageQuality,
   type AudioQuality,
   type VideoQuality,
+  type GifQuality,
+  type GifFps,
+  type GifWidth,
+  type TrimOptions,
   getMediaType,
+  getOutputCategory,
   DEFAULT_QUALITIES,
   // Advanced controls & helpers
   AUDIO_BITRATES,
@@ -18,15 +23,15 @@ import {
   AUDIO_PROFILES,
   AUDIO_COMPRESSION_LEVEL,
   VIDEO_ENCODING_MODES,
-  VIDEO_BITRATE,
-  VIDEO_MAX_BITRATE,
-  VIDEO_PRESET,
-  PRORES_VARIANTS,
-  VP9_QUALITY,
+  type VideoEncodingMode,
+  type ProResVariant,
   SIMPLE_QUALITY_MAPPINGS,
+  buildVideoQuality,
 } from "../types/media";
 import { findFFmpegPath } from "../utils/ffmpeg";
-import { Tool } from "@raycast/api";
+import { findPreset } from "../utils/presets";
+import { parseTimeString } from "../utils/time";
+import type { Tool } from "@raycast/api";
 import path from "path";
 import os from "os";
 import fs from "fs";
@@ -73,9 +78,28 @@ type Input = {
     | ".webp"
     | ".heic"
     | ".tiff"
-    | ".avif";
+    | ".avif"
+    // GIF (from video input)
+    | ".gif";
   // Simple mode quality (optional). If omitted, sensible defaults apply.
   quality?: QualityLevel;
+
+  // --- Optional cross-cutting controls ---
+  /** Absolute path to output folder. Must exist. */
+  outputDir?: string;
+  /** Remove EXIF/GPS/tags from output. */
+  stripMetadata?: boolean;
+  /** Trim start time, e.g. "0:10" or "10.5" (seconds). */
+  trimStart?: string;
+  /** Trim end time, e.g. "1:30" or "90" (seconds). */
+  trimEnd?: string;
+  /** Preset ID to apply. If set, overrides most other params. */
+  presetId?: string;
+
+  // --- Optional GIF controls (apply when outputFileType === ".gif") ---
+  gifFps?: "10" | "15" | "24" | "30";
+  gifWidth?: "original" | "480" | "720" | "1080";
+  gifLoop?: boolean;
 
   // --- Optional advanced image controls (apply when relevant) ---
   // Generic percentage for JPG/WEBP/HEIC/AVIF (0-100)
@@ -141,10 +165,46 @@ type Input = {
 };
 
 export default async function ConvertMedia(input: Input) {
+  const installed = await findFFmpegPath();
+  if (!installed) {
+    return {
+      type: "error",
+      message: "FFmpeg is not installed. Please install FFmpeg to use this tool.",
+    };
+  }
+
+  // If a preset is specified, apply its settings on top of `input` before any processing.
+  let effectiveInput: Input = input;
+  if (input.presetId) {
+    try {
+      const preset = await findPreset(input.presetId);
+      if (!preset) {
+        return { type: "error", message: `Preset not found: ${input.presetId}` };
+      }
+      effectiveInput = {
+        ...input,
+        outputFileType: preset.outputFormat as Input["outputFileType"],
+        outputDir: input.outputDir ?? preset.outputDir,
+        stripMetadata: input.stripMetadata ?? preset.stripMetadata,
+        trimStart: input.trimStart ?? preset.trim?.start,
+        trimEnd: input.trimEnd ?? preset.trim?.end,
+      };
+    } catch (error) {
+      return { type: "error", message: `Failed to load preset: ${String(error)}` };
+    }
+  }
+
   const {
     inputPath,
     outputFileType,
     quality,
+    outputDir,
+    stripMetadata,
+    trimStart,
+    trimEnd,
+    gifFps,
+    gifWidth,
+    gifLoop,
     // image
     imageQualityPercent,
     webpLossless,
@@ -165,14 +225,7 @@ export default async function ConvertMedia(input: Input) {
     videoPreset,
     proresVariant,
     vp9Quality,
-  } = input;
-  const installed = await findFFmpegPath();
-  if (!installed) {
-    return {
-      type: "error",
-      message: "FFmpeg is not installed. Please install FFmpeg to use this tool.",
-    };
-  }
+  } = effectiveInput;
 
   let fullPath: string;
   let mediaType: "image" | "audio" | "video" | null;
@@ -195,6 +248,73 @@ export default async function ConvertMedia(input: Input) {
     };
   }
 
+  // Validate optional output directory & load preset if given.
+  let resolvedOutputDir: string | undefined;
+  if (outputDir) {
+    resolvedOutputDir = path.resolve(path.normalize(outputDir.replace(/^~/, os.homedir())));
+    try {
+      const stat = fs.statSync(resolvedOutputDir);
+      if (!stat.isDirectory()) {
+        return { type: "error", message: `Output path is not a directory: ${resolvedOutputDir}` };
+      }
+    } catch {
+      return { type: "error", message: `Output directory does not exist: ${resolvedOutputDir}` };
+    }
+  }
+
+  // Validate trim values.
+  if (trimStart && parseTimeString(trimStart) === null) {
+    return { type: "error", message: `Invalid trimStart value: ${trimStart}` };
+  }
+  if (trimEnd && parseTimeString(trimEnd) === null) {
+    return { type: "error", message: `Invalid trimEnd value: ${trimEnd}` };
+  }
+  // Ensure end is after start when both provided (prevents FFmpeg producing empty output)
+  if (trimStart && trimEnd) {
+    const s = parseTimeString(trimStart);
+    const e = parseTimeString(trimEnd);
+    if (s !== null && e !== null && e <= s) {
+      return { type: "error", message: "End time must be after start time" };
+    }
+  }
+  const trim: TrimOptions | undefined = trimStart || trimEnd ? { start: trimStart, end: trimEnd } : undefined;
+
+  // GIF output path: build GifQuality and bypass the normal quality builder.
+  if (getOutputCategory(outputFileType as AllOutputExtension) === "gif") {
+    if (mediaType !== "video") {
+      return {
+        type: "error",
+        message: `GIF output requires a video input. Got ${mediaType} file: ${fullPath}`,
+      };
+    }
+    const fpsChoice = (gifFps ?? "15") as GifFps;
+    const widthChoice = (gifWidth ?? "original") as GifWidth;
+    const loopChoice = typeof gifLoop === "boolean" ? gifLoop : true;
+    const gifQuality: GifQuality = {
+      ".gif": { fps: fpsChoice, width: widthChoice, loop: loopChoice },
+    };
+    try {
+      const outputPath = await convertMedia(fullPath, ".gif", gifQuality, {
+        outputDir: resolvedOutputDir,
+        stripMetadata,
+        trim,
+      });
+      return {
+        type: "success",
+        message: `✅ Converted video to GIF\n- Input: ${fullPath}\n- Output: ${outputPath}\n- Settings: ${fpsChoice}fps, width ${widthChoice}, loop=${loopChoice}`,
+      };
+    } catch (error) {
+      console.error(error);
+      return { type: "error", message: `❌ GIF conversion failed. Error: ${error}` };
+    }
+  }
+
+  const convertOpts: ConvertOptions = {
+    outputDir: resolvedOutputDir,
+    stripMetadata,
+    trim,
+  };
+
   try {
     let outputPath: string;
     // Build quality settings with sensible defaults and advanced overrides
@@ -213,14 +333,14 @@ export default async function ConvertMedia(input: Input) {
             const next: ImageQuality[".jpg"] = (
               typeof pct === "number" ? pct : (current as ImageQuality[".jpg"])
             ) as ImageQuality[".jpg"];
-            value = next as unknown as ImageQuality[OutputImageExtension];
+            value = next as ImageQuality[OutputImageExtension];
             break;
           }
           case ".png": {
             const next: ImageQuality[".png"] = (
               pngVariant && ["png-24", "png-8"].includes(pngVariant) ? pngVariant : (current as ImageQuality[".png"])
             ) as ImageQuality[".png"];
-            value = next as unknown as ImageQuality[OutputImageExtension];
+            value = next as ImageQuality[OutputImageExtension];
             break;
           }
           case ".webp": {
@@ -230,7 +350,7 @@ export default async function ConvertMedia(input: Input) {
               const next: ImageQuality[".webp"] = (
                 typeof pct === "number" ? pct : (current as ImageQuality[".webp"])
               ) as ImageQuality[".webp"];
-              value = next as unknown as ImageQuality[OutputImageExtension];
+              value = next as ImageQuality[OutputImageExtension];
             }
             break;
           }
@@ -242,7 +362,7 @@ export default async function ConvertMedia(input: Input) {
             const next: ImageQuality[".heic"] = (
               typeof pct === "number" ? pct : (current as ImageQuality[".heic"])
             ) as ImageQuality[".heic"];
-            value = next as unknown as ImageQuality[OutputImageExtension];
+            value = next as ImageQuality[OutputImageExtension];
             break;
           }
           case ".tiff": {
@@ -251,7 +371,7 @@ export default async function ConvertMedia(input: Input) {
                 ? tiffCompression
                 : (current as ImageQuality[".tiff"])
             ) as ImageQuality[".tiff"];
-            value = next as unknown as ImageQuality[OutputImageExtension];
+            value = next as ImageQuality[OutputImageExtension];
             break;
           }
           case ".avif": {
@@ -259,7 +379,7 @@ export default async function ConvertMedia(input: Input) {
             const next: ImageQuality[".avif"] = (
               typeof pct === "number" ? pct : (current as ImageQuality[".avif"])
             ) as ImageQuality[".avif"];
-            value = next as unknown as ImageQuality[OutputImageExtension];
+            value = next as ImageQuality[OutputImageExtension];
             break;
           }
         }
@@ -358,119 +478,23 @@ export default async function ConvertMedia(input: Input) {
               : baseDefault
         ) as VideoQuality[keyof VideoQuality];
 
-        switch (outputFileType as OutputVideoExtension) {
-          case ".mov": {
-            const current = videoValue as VideoQuality[".mov"];
-            const next: VideoQuality[".mov"] = {
-              variant: validateOneOf(proresVariant, PRORES_VARIANTS, current.variant),
-            };
-            videoValue = next;
-            break;
-          }
-          case ".webm": {
-            const current = videoValue as VideoQuality[".webm"]; // has either crf or vbr variant + quality
-            const mode = validateOneOf(
-              videoEncodingMode,
-              VIDEO_ENCODING_MODES,
-              (current as Extract<VideoQuality[".webm"], { encodingMode: "crf" | "vbr" | "vbr-2-pass" }>)
-                .encodingMode ?? "crf",
-            );
-            if (mode === "crf") {
-              const currentCrf = (current as Extract<VideoQuality[".webm"], { encodingMode: "crf" }>).crf;
-              videoValue = {
-                encodingMode: "crf",
-                crf: clampPercent(videoCrf) ?? currentCrf,
-                quality: validateOneOf(
-                  vp9Quality,
-                  VP9_QUALITY,
-                  (current as Extract<VideoQuality[".webm"], { encodingMode: "crf" }>).quality ?? "good",
-                ),
-              } as VideoQuality[".webm"];
-            } else {
-              // Use sensible defaults instead of reading from current when switching modes
-              const defBitrate: (typeof VIDEO_BITRATE)[number] = "2000";
-              const defMax: (typeof VIDEO_MAX_BITRATE)[number] = "";
-              const defQuality: (typeof VP9_QUALITY)[number] = "good";
-              videoValue = {
-                encodingMode: mode,
-                bitrate: validateOneOf(videoBitrate, VIDEO_BITRATE, defBitrate),
-                maxBitrate: validateOneOf(videoMaxBitrate, VIDEO_MAX_BITRATE, defMax),
-                quality: validateOneOf(vp9Quality, VP9_QUALITY, defQuality),
-              } as VideoQuality[".webm"];
-            }
-            break;
-          }
-          case ".mp4":
-          case ".mkv": {
-            const current = videoValue as VideoQuality[".mp4"] | VideoQuality[".mkv"] as
-              | VideoQuality[".mp4"]
-              | VideoQuality[".mkv"];
-            const mode = validateOneOf(
-              videoEncodingMode,
-              VIDEO_ENCODING_MODES,
-              (
-                current as Extract<
-                  VideoQuality[".mp4"] | VideoQuality[".mkv"],
-                  { encodingMode: "crf" | "vbr" | "vbr-2-pass" }
-                >
-              ).encodingMode ?? "crf",
-            );
-            if (mode === "crf") {
-              const currentCrf = (current as Extract<VideoQuality[".mp4"] | VideoQuality[".mkv"], { crf: number }>).crf;
-              const currentPreset =
-                (current as Extract<VideoQuality[".mp4"] | VideoQuality[".mkv"], { preset?: unknown }>).preset ??
-                "medium";
-              videoValue = {
-                encodingMode: "crf",
-                crf: clampPercent(videoCrf) ?? currentCrf,
-                preset: validateOneOf(videoPreset, VIDEO_PRESET, currentPreset),
-              } as unknown as VideoQuality[".mp4"] | VideoQuality[".mkv"];
-            } else {
-              const defBitrate: (typeof VIDEO_BITRATE)[number] = "2000";
-              const defMax: (typeof VIDEO_MAX_BITRATE)[number] = "";
-              const defPreset: (typeof VIDEO_PRESET)[number] = "medium";
-              videoValue = {
-                encodingMode: mode,
-                bitrate: validateOneOf(videoBitrate, VIDEO_BITRATE, defBitrate),
-                maxBitrate: validateOneOf(videoMaxBitrate, VIDEO_MAX_BITRATE, defMax),
-                preset: validateOneOf(videoPreset, VIDEO_PRESET, defPreset),
-              } as unknown as VideoQuality[".mp4"] | VideoQuality[".mkv"];
-            }
-            break;
-          }
-          case ".avi":
-          case ".mpg": {
-            const current = videoValue as VideoQuality[".avi"] | VideoQuality[".mpg"] as
-              | VideoQuality[".avi"]
-              | VideoQuality[".mpg"];
-            const mode = validateOneOf(
-              videoEncodingMode,
-              VIDEO_ENCODING_MODES,
-              (
-                current as Extract<
-                  VideoQuality[".avi"] | VideoQuality[".mpg"],
-                  { encodingMode: "crf" | "vbr" | "vbr-2-pass" }
-                >
-              ).encodingMode ?? "crf",
-            );
-            if (mode === "crf") {
-              const currentCrf = (current as Extract<VideoQuality[".avi"] | VideoQuality[".mpg"], { crf: number }>).crf;
-              videoValue = {
-                encodingMode: "crf",
-                crf: clampPercent(videoCrf) ?? currentCrf,
-              } as unknown as VideoQuality[".avi"] | VideoQuality[".mpg"];
-            } else {
-              const defBitrate: (typeof VIDEO_BITRATE)[number] = "2000";
-              const defMax: (typeof VIDEO_MAX_BITRATE)[number] = "";
-              videoValue = {
-                encodingMode: mode,
-                bitrate: validateOneOf(videoBitrate, VIDEO_BITRATE, defBitrate),
-                maxBitrate: validateOneOf(videoMaxBitrate, VIDEO_MAX_BITRATE, defMax),
-              } as unknown as VideoQuality[".avi"] | VideoQuality[".mpg"];
-            }
-            break;
-          }
-        }
+        // Centralized video quality construction using buildVideoQuality factory
+        const current = videoValue as VideoQuality[keyof VideoQuality];
+        const overrides = {
+          encodingMode: videoEncodingMode as VideoEncodingMode | undefined,
+          crf: clampPercent(videoCrf) as number | undefined,
+          bitrate: videoBitrate as Input["videoBitrate"] | undefined,
+          maxBitrate: videoMaxBitrate as Input["videoMaxBitrate"] | undefined,
+          preset: videoPreset as Input["videoPreset"] | undefined,
+          quality: vp9Quality as Input["vp9Quality"] | undefined,
+          variant: proresVariant as ProResVariant | undefined,
+        };
+        const built = buildVideoQuality(
+          outputFileType as OutputVideoExtension,
+          overrides,
+          current as VideoQuality[OutputVideoExtension],
+        );
+        videoValue = built as VideoQuality[keyof VideoQuality];
 
         return { [outputFileType]: videoValue } as QualitySettings;
       }
@@ -486,18 +510,21 @@ export default async function ConvertMedia(input: Input) {
         fullPath,
         outputFileType as OutputImageExtension,
         qualitySettings as ImageQuality,
+        convertOpts,
       );
     } else if (mediaType === "audio") {
       outputPath = await convertMedia(
         fullPath,
         outputFileType as OutputAudioExtension,
         qualitySettings as AudioQuality,
+        convertOpts,
       );
     } else if (mediaType === "video") {
       outputPath = await convertMedia(
         fullPath,
         outputFileType as OutputVideoExtension,
         qualitySettings as VideoQuality,
+        convertOpts,
       );
     } else {
       return {
@@ -557,6 +584,27 @@ function clampPercent(value: number | undefined): number | undefined {
   if (typeof value !== "number" || Number.isNaN(value)) return undefined;
   return Math.min(100, Math.max(0, Math.round(value)));
 }
+
+// Helper: get encodingMode value from a possibly-unknown object
+function getEncodingMode(obj: unknown): VideoEncodingMode | undefined {
+  if (typeof obj !== "object" || obj === null) return undefined;
+  const mode = (obj as Record<string, unknown>).encodingMode;
+  if (typeof mode === "string" && (VIDEO_ENCODING_MODES as readonly string[]).includes(mode)) {
+    return mode as VideoEncodingMode;
+  }
+  return undefined;
+}
+
+// ----------------- Type guards -----------------
+function isCrfLike(obj: unknown): obj is { crf: number } {
+  return typeof obj === "object" && obj !== null && typeof (obj as Record<string, unknown>).crf === "number";
+}
+
+function isVbrLike(obj: unknown): obj is { bitrate: string; maxBitrate?: string } {
+  return typeof obj === "object" && obj !== null && typeof (obj as Record<string, unknown>).bitrate === "string";
+}
+
+// NOTE: ProRes variant selection is handled by the centralized factory `buildVideoQuality`.
 
 function validateOneOf<T extends readonly (string | number)[]>(
   value: T[number] | undefined,
@@ -627,38 +675,54 @@ function summarizeSettings(
       }
       case ".webm": {
         const v = vid[".webm"] as VideoQuality[".webm"];
-        if (v.encodingMode === "crf") {
-          return `CRF ${v.crf}, VP9 ${v.quality}`;
+        const enc = getEncodingMode(v);
+        if (enc === "crf") {
+          const vr = v as Extract<VideoQuality[".webm"], { encodingMode: "crf" }>;
+          return `CRF ${vr.crf}, VP9 ${vr.quality}`;
         }
-        return `${v.encodingMode.toUpperCase()} ${v.bitrate} kbps${v.maxBitrate ? ` max ${v.maxBitrate}` : ""}, VP9 ${v.quality}`;
+        const vr = v as Extract<VideoQuality[".webm"], { encodingMode: "vbr" | "vbr-2-pass" }>;
+        return `${(enc ?? "").toUpperCase()} ${vr.bitrate} kbps${vr.maxBitrate ? ` max ${vr.maxBitrate}` : ""}, VP9 ${vr.quality}`;
       }
       case ".mp4": {
         const v = vid[".mp4"] as VideoQuality[".mp4"];
-        if (v.encodingMode === "crf") {
-          return `CRF ${v.crf}, preset ${v.preset}`;
+        const enc = getEncodingMode(v);
+        if (enc === "crf") {
+          const vr = v as Extract<VideoQuality[".mp4"], { encodingMode: "crf" }>;
+          return `CRF ${vr.crf}, preset ${vr.preset}`;
         }
-        return `${v.encodingMode.toUpperCase()} ${v.bitrate} kbps${v.maxBitrate ? ` max ${v.maxBitrate}` : ""}, preset ${v.preset}`;
+        const vr = v as Extract<VideoQuality[".mp4"], { encodingMode: "vbr" | "vbr-2-pass" }>;
+        return `${(enc ?? "").toUpperCase()} ${vr.bitrate} kbps${vr.maxBitrate ? ` max ${vr.maxBitrate}` : ""}, preset ${vr.preset}`;
       }
       case ".mkv": {
         const v = vid[".mkv"] as VideoQuality[".mkv"];
-        if (v.encodingMode === "crf") {
-          return `CRF ${v.crf}, preset ${v.preset}`;
+        const enc = getEncodingMode(v);
+        if (enc === "crf") {
+          const vr = v as Extract<VideoQuality[".mkv"], { encodingMode: "crf" }>;
+          return `CRF ${vr.crf}, preset ${vr.preset}`;
         }
-        return `${v.encodingMode.toUpperCase()} ${v.bitrate} kbps${v.maxBitrate ? ` max ${v.maxBitrate}` : ""}, preset ${v.preset}`;
+        const vr = v as Extract<VideoQuality[".mkv"], { encodingMode: "vbr" | "vbr-2-pass" }>;
+        return `${(enc ?? "").toUpperCase()} ${vr.bitrate} kbps${vr.maxBitrate ? ` max ${vr.maxBitrate}` : ""}, preset ${vr.preset}`;
       }
       case ".avi": {
         const v = vid[".avi"] as VideoQuality[".avi"];
-        if (v.encodingMode === "crf") {
+        // Prefer runtime type guards instead of unsafe casts
+        if (isCrfLike(v)) {
           return `CRF ${v.crf}`;
         }
-        return `${v.encodingMode.toUpperCase()} ${v.bitrate} kbps${v.maxBitrate ? ` max ${v.maxBitrate}` : ""}`;
+        if (isVbrLike(v)) {
+          return `${(getEncodingMode(v) ?? "").toUpperCase()} ${v.bitrate} kbps${v.maxBitrate ? ` max ${v.maxBitrate}` : ""}`;
+        }
+        return "default";
       }
       case ".mpg": {
         const v = vid[".mpg"] as VideoQuality[".mpg"];
-        if (v.encodingMode === "crf") {
-          return `CRF ${v.crf}`;
+        const enc = getEncodingMode(v);
+        if (enc === "crf") {
+          const vr = v as Extract<VideoQuality[".mpg"], { encodingMode: "crf" }>;
+          return `CRF ${vr.crf}`;
         }
-        return `${v.encodingMode.toUpperCase()} ${v.bitrate} kbps${v.maxBitrate ? ` max ${v.maxBitrate}` : ""}`;
+        const vr = v as Extract<VideoQuality[".mpg"], { encodingMode: "vbr" | "vbr-2-pass" }>;
+        return `${(enc ?? "").toUpperCase()} ${vr.bitrate} kbps${vr.maxBitrate ? ` max ${vr.maxBitrate}` : ""}`;
       }
     }
   }
