@@ -9,34 +9,35 @@ The classifier recognizes paragraphs, ATX and setext headings, fenced and indent
 
 ## Commands
 
-| Command | Description |
-| --- | --- |
-| Wrap Text | Wrap text at a configurable column width. |
+| Command     | Description                                                                         |
+| ----------- | ----------------------------------------------------------------------------------- |
+| Wrap Text   | Wrap text at a configurable column width.                                           |
 | Unwrap Text | Reflow wrapped text into continuous paragraphs while preserving Markdown structure. |
 
 ## Preferences
 
 Both commands share **Preferred Source**, **Primary Action**, **Hide HUD**, and **Pop to Root After Action**:
 
-| Preference | Default | What it does |
-| --- | --- | --- |
-| Preferred Source | Selected Text | Try the selection first; fall back to the clipboard if none. Choose Clipboard to flip the priority. |
-| Primary Action | Paste | Paste the result into the focused app. Choose Copy to put the result on the clipboard instead. |
-| Hide HUD | off | Suppress the success HUD ("Pasted wrapped text" / "Copied unwrapped text"). |
-| Pop to Root After Action | off | Return to Raycast root after the action completes. (No-op when launched via hotkey.) |
+| Preference               | Default       | What it does                                                                                        |
+| ------------------------ | ------------- | --------------------------------------------------------------------------------------------------- |
+| Preferred Source         | Selected Text | Try the selection first; fall back to the clipboard if none. Choose Clipboard to flip the priority. |
+| Primary Action           | Paste         | Paste the result into the focused app. Choose Copy to put the result on the clipboard instead.      |
+| Hide HUD                 | off           | Suppress the success HUD ("Pasted wrapped text" / "Copied unwrapped text").                         |
+| Pop to Root After Action | off           | Return to Raycast root after the action completes. (No-op when launched via hotkey.)                |
 
 **Wrap Text** also has:
 
-| Preference | Default | What it does |
-| --- | --- | --- |
-| Wrap Column | 80 | The column at which lines are wrapped. The wrap budget is the _full_ line including blockquote and list-item prefixes. Width values below 20 are clamped to 20. |
+| Preference  | Default | What it does                                                                                                                                                    |
+| ----------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Wrap Column | 80      | The column at which lines are wrapped. The wrap budget is the _full_ line including blockquote and list-item prefixes. Width values below 20 are clamped to 20. |
 
 **Unwrap Text** also has:
 
-| Preference | Default | What it does |
-| --- | --- | --- |
-| Strip Soft Hyphens | on | When joining lines, remove a trailing hyphen if it appears to be a soft line-break hyphen (e.g. `inter-` + `esting` → `interesting`). Compounds like `state-of-the-art` are preserved. |
-| Keep Blank Lines | off | Preserve blank lines between paragraphs instead of collapsing runs. |
+| Preference               | Default | What it does                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Strip Soft Hyphens       | on      | When joining lines, remove a trailing soft hyphen (U+00AD) — the invisible character that marks an optional break. A regular `-` is always kept, so `well-` + `known` rejoins as `well-known` and `state-of-the-art` stays intact; either way the halves join with no space.                                                                        |
+| Keep Blank Lines         | off     | Preserve blank lines between paragraphs instead of collapsing runs.                                                                                                                                                                                                                                                                                 |
+| Strip Bullet Indentation | off     | Re-indent bullet and numbered lists to a fixed 2-space-per-level step, removing the leading spaces that pasted terminal or rich-text content adds in front of markers. Nesting depth is preserved by relative indent order, so pasting into an email client produces native bullets. Recognizes Unicode bullets (`•`, `‣`, `▪`, `▸`, `–`, `—`) too. |
 
 ## Suggested hotkeys
 
@@ -50,7 +51,7 @@ Bind these in Raycast → Extensions → Wrap Unwrap. Suggestions:
 Wrap Unwrap implements the [LitoMore cross-extension convention](https://github.com/LitoMore/raycast-cross-extension-conventions) on the provider side using only built-in Raycast SDK primitives. Pass a `launchContext` with the text and an optional `callbackLaunchOptions` describing where to send the result:
 
 ```ts
-import { LaunchType, launchCommand } from "@raycast/api";
+import { launchCommand, LaunchType } from "@raycast/api";
 
 await launchCommand({
   name: "unwrap-text",
@@ -72,7 +73,7 @@ await launchCommand({
 
 The provider invokes your callback command with `context: { result: "..." }` containing the transformed text. When `callbackLaunchOptions` is present, the provider does not paste, copy, or show a HUD — it just hands the result back.
 
-`UnwrapContext` accepts `text`, `hyphenation`, `keepBlankLines`, and `callbackLaunchOptions`. `WrapContext` accepts `text`, `width`, and `callbackLaunchOptions`.
+`UnwrapContext` accepts `text`, `hyphenation`, `keepBlankLines`, `flattenBullets`, and `callbackLaunchOptions`. `WrapContext` accepts `text`, `width`, and `callbackLaunchOptions`.
 
 ## Acknowledgements
 
