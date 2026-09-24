@@ -1,8 +1,16 @@
-import { Color, Icon, List } from "@raycast/api";
+import { Color, Icon, List, getPreferenceValues } from "@raycast/api";
 import { MutatePromise } from "@raycast/utils";
 import { format, formatDistanceToNow } from "date-fns";
 
-import { displayDueDate, getLocationDescription, getPriorityIcon, isFullDay, isOverdue } from "../helpers";
+import {
+  displayDueDate,
+  extractTagsFromNotes,
+  formatReminderTime,
+  getLocationDescription,
+  getPriorityIcon,
+  isFullDay,
+  isOverdue,
+} from "../helpers";
 import { Reminder, List as TList } from "../hooks/useData";
 import { ViewProps } from "../hooks/useViewReminders";
 
@@ -48,10 +56,22 @@ export default function ReminderListItem({
 
   if (reminder.dueDate) {
     const { dueDate } = reminder;
+    const preferences = getPreferenceValues<Preferences.MyReminders>();
+    const displayDueDateWithTime = preferences.displayDueDateWithTime;
+
+    let valueText = "";
+    if (isFullDay(dueDate)) {
+      valueText = displayDueDate(dueDate);
+    } else if (displayDueDateWithTime) {
+      valueText = formatReminderTime(reminder);
+    } else {
+      valueText = formatDistanceToNow(dueDate, { addSuffix: true });
+    }
+
     accessories.push({
       icon: { source: Icon.Calendar, tintColor: !reminder.isCompleted && overdue ? Color.Red : undefined },
       text: {
-        value: isFullDay(dueDate) ? displayDueDate(dueDate) : formatDistanceToNow(dueDate, { addSuffix: true }),
+        value: valueText,
         color: !reminder.isCompleted && overdue ? Color.Red : undefined,
       },
       tooltip: `Due date: ${
@@ -79,6 +99,18 @@ export default function ReminderListItem({
     });
 
     keywords.push(reminder.priority);
+  }
+
+  const { tags } = extractTagsFromNotes(reminder.notes);
+
+  if (tags.length > 0) {
+    accessories.push({
+      icon: Icon.Tag,
+      text: tags.map((t) => `#${t}`).join(" "),
+      tooltip: `Tags: ${tags.map((t) => `#${t}`).join(", ")}`,
+    });
+
+    keywords.push(...tags.map((t) => `#${t}`), ...tags);
   }
 
   if (listId === "all" && reminder.list) {

@@ -9,14 +9,20 @@ const activateTab = async (tab: Tab) =>
     const window = orion.windows.byId(${tab.window_id});
     const urls = window.tabs.url();
     const names = window.tabs.name();
-    const targetUrl = String.raw\`${tab.url}\`;
-    const targetName = String.raw\`${tab.title}\`;
-    let index = -1;
-    for (let i = 0; i < urls.length; i++) {
-      if (urls[i] === targetUrl && names[i] === targetName) {
-        index = i;
-        break;
+    const targetUrl = ${JSON.stringify(tab.url)};
+    const targetName = ${JSON.stringify(tab.title)};
+    let index = ${tab.tab_index};
+    // The index preserves duplicate URL instances. If a tab changed or closed
+    // between refresh and action, retain the previous title/URL fallback -
+    // but only when exactly one tab still matches. Two identical tabs could
+    // have swapped positions since the last refresh, so an ambiguous match
+    // activates nothing rather than guessing the wrong instance.
+    if (urls[index] !== targetUrl || names[index] !== targetName) {
+      const matches = [];
+      for (let i = 0; i < urls.length; i++) {
+        if (urls[i] === targetUrl && names[i] === targetName) matches.push(i);
       }
+      index = matches.length === 1 ? matches[0] : -1;
     }
     if (index !== -1) {
       window.index = 1;
@@ -27,8 +33,8 @@ const activateTab = async (tab: Tab) =>
 
 // `closeLaunchers` is opt-in (the Command Bar passes it) so the standalone
 // "Search Tabs" command doesn't make an extra AppleScript call on every open.
-const OpenTabAction = (props: { tab: Tab; closeLaunchers?: boolean }) => {
-  const { tab, closeLaunchers } = props;
+const OpenTabAction = (props: { tab: Tab; closeLaunchers?: boolean; onActivate?: (tab: Tab) => void }) => {
+  const { tab, closeLaunchers, onActivate } = props;
   return (
     <Action
       title="Open in Browser"
@@ -41,6 +47,10 @@ const OpenTabAction = (props: { tab: Tab; closeLaunchers?: boolean }) => {
           await closeLauncherTabs();
         }
         await activateTab(tab);
+        // The tabs cache only learns this switch from its next AppleScript
+        // refresh. Update it locally right away so a Command Bar reopened
+        // before that refresh completes already shows `tab` as current.
+        onActivate?.(tab);
         await closeMainWindow({ clearRootSearch: true });
       }}
     />
