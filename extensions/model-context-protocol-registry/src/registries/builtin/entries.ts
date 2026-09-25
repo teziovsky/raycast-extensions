@@ -19,6 +19,18 @@ export const OFFICIAL_ENTRIES: RegistryEntry[] = [
     },
   },
   {
+    name: "aiapplyd",
+    title: "AI Applyd",
+    description:
+      "Auto-Apply That Ends on an Interview. Search jobs matched to your resume, then apply from Raycast: AI Applyd rewrites your resume for the posting, writes the cover letter and submits the application on the employer's own hiring system across 15 ATS platforms, including Workday, Greenhouse, Lever and Ashby. Also scores your resume against any job and preps you for the interview. Hosted remote Streamable HTTP server through `mcp-remote`; OAuth 2.1 sign-in with dynamic client registration, no API key to paste.",
+    icon: "https://aiapplyd.com/apple-touch-icon.png",
+    homepage: "https://aiapplyd.com/mcps?source=raycast-mcp-registry",
+    configuration: {
+      command: "npx",
+      args: ["-y", "mcp-remote", "https://mcp.aiapplyd.com/mcp"],
+    },
+  },
+  {
     name: "atono",
     title: "Atono",
     description:
@@ -494,6 +506,19 @@ export const OFFICIAL_ENTRIES: RegistryEntry[] = [
     configuration: {
       command: "npx",
       args: ["-y", "mcp-remote", "https://mcp.sanity.io", "--transport", "http-only"],
+    },
+  },
+  {
+    name: "scout7",
+    title: "Scout7",
+    description:
+      "Run a week of organic marketing on loop from your AI agent. Scout7 plans your week from your brand, then writes SEO blogs, videos, LinkedIn carousels and social posts, schedules everything across your channels, and reports what moved — it even checks whether you're cited by ChatGPT and Claude. You approve before anything goes live. Hosted remote Streamable HTTP server with Scout7 OAuth 2.1 sign-in (dynamic client registration) through `mcp-remote`; no API key needed.",
+    icon: "https://scout7.ai/apple-touch-icon.png",
+    homepage:
+      "https://scout7.ai/mcp?utm_source=raycast-mcp-registry&utm_medium=listing&utm_campaign=mcp-directories&ref=raycast-mcp-registry",
+    configuration: {
+      command: "npx",
+      args: ["-y", "mcp-remote", "https://mcp.scout7.ai/mcp"],
     },
   },
   {
@@ -1115,6 +1140,18 @@ export const COMMUNITY_ENTRIES: RegistryEntry[] = [
     },
   },
   {
+    name: "bandcamp",
+    title: "Bandcamp",
+    description:
+      "Dig Bandcamp without an account or API key: search artists, albums, labels and tracks, browse genre tags for new and top releases, read tracklists and prices. Unofficial; read-only, local stdio server.",
+    icon: "https://raw.githubusercontent.com/Venut-Technologies/bandcamp-mcp/main/assets/icon.png",
+    homepage: "https://github.com/Venut-Technologies/bandcamp-mcp",
+    configuration: {
+      command: "npx",
+      args: ["-y", "bandcamp-mcp"],
+    },
+  },
+  {
     name: "basic-memory",
     title: "Basic Memory",
     description:
@@ -1180,6 +1217,18 @@ export const COMMUNITY_ENTRIES: RegistryEntry[] = [
       env: {
         DISCORD_TOKEN: "YOUR_DISCORD_BOT_TOKEN",
       },
+    },
+  },
+  {
+    name: "engine-dj",
+    title: "Engine DJ",
+    description:
+      "Search, audit and build playlists in your Engine DJ (Denon) library: BPM and Camelot key search, duplicate and missing-file audits, cues and beatgrids, opt-in playlist and tag edits. Unofficial; local stdio server, macOS.",
+    icon: "https://raw.githubusercontent.com/Venut-Technologies/engine-dj-mcp/main/assets/icon.png",
+    homepage: "https://github.com/Venut-Technologies/engine-dj-mcp",
+    configuration: {
+      command: "npx",
+      args: ["-y", "engine-dj-mcp"],
     },
   },
   {
@@ -1353,6 +1402,18 @@ export const COMMUNITY_ENTRIES: RegistryEntry[] = [
         PAPERLESS_URL: "http://your-paperless-instance:8000",
         PAPERLESS_API_KEY: "your-api-token",
       },
+    },
+  },
+  {
+    name: "serato-dj",
+    title: "Serato DJ",
+    description:
+      "Search and audit your Serato DJ library: harmonic BPM and Camelot key search, crates, duplicate and missing-file audits, and new crates built with a preview before anything is written. Unofficial; local stdio server, macOS.",
+    icon: "https://raw.githubusercontent.com/Venut-Technologies/serato-dj-mcp/main/assets/icon.png",
+    homepage: "https://github.com/Venut-Technologies/serato-dj-mcp",
+    configuration: {
+      command: "npx",
+      args: ["-y", "serato-dj-mcp"],
     },
   },
   {
